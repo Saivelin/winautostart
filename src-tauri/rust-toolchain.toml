@@ -1,0 +1,5 @@
+# Pinned so a new stable clippy lint can't turn CI red without a code change;
+# bump deliberately.
+[toolchain]
+channel = "1.93.1"
+components = ["clippy"]

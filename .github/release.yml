@@ -1,0 +1,19 @@
+# Categories for GitHub's "Generate release notes" button (used when a draft
+# release is edited by hand); the Release workflow itself takes the notes
+# from CHANGELOG.md.
+changelog:
+  exclude:
+    labels: [skip-changelog]
+  categories:
+    - title: Security
+      labels: [security]
+    - title: Added
+      labels: [enhancement]
+    - title: Fixed
+      labels: [bug]
+    - title: Documentation
+      labels: [documentation]
+    - title: Dependencies
+      labels: [dependencies]
+    - title: Other changes
+      labels: ["*"]

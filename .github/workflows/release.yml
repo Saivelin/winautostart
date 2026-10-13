@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    # X.Y.Z only: WiX (MSI) rejects pre-release versions like 1.1.0-beta.1
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  # Manual fallback: Actions → Release → Run workflow, choosing the vX.Y.Z *tag*
+  # as the ref; the version check below rejects a branch ref
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # npm ci runs third-party install scripts; keep the token out of .git/config
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+      - run: npm run check:version
+      - name: Tag matches package.json version
+        shell: bash
+        run: test "${GITHUB_REF_NAME}" = "v$(node -p "require('./package.json').version")"
+
+      # The release body is this version's CHANGELOG.md section plus the install
+      # notes; a tag without a changelog entry fails here, before the build
+      - name: Release notes from CHANGELOG.md
+        id: notes
+        shell: bash
+        run: |
+          # Random delimiter: a changelog line can't terminate the output early
+          EOF="notes_$(openssl rand -hex 8)"
+          {
+            echo "body<<$EOF"
+            node scripts/changelog-section.mjs "${GITHUB_REF_NAME#v}"
+            echo
+            echo "## Install"
+            echo
+            echo "Download \`WinAutoStart_${GITHUB_REF_NAME#v}_x64-setup.exe\` (per-user, no admin rights) or the \`.msi\` and run it — Windows 10/11 x64."
+            echo
+            echo "The installers are not code-signed, so SmartScreen shows \"Windows protected your PC\" on first run: click **More info → Run anyway**. Checksums of the attached files are in \`SHA256SUMS.txt\`; verify with \`certutil -hashfile <file> SHA256\`."
+            echo "$EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # Builds the MSI and NSIS installers and attaches them to a draft release,
+      # so the notes can be reviewed before publishing
+      - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: WinAutoStart ${{ github.ref_name }}
+          releaseBody: ${{ steps.notes.outputs.body }}
+          releaseDraft: true
+
+      - name: Attach SHA256SUMS.txt
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: src-tauri/target/release/bundle
+        run: |
+          # MSYS sha256sum marks binaries as "hash *file"; plain two-space form reads better next to certutil
+          { (cd msi && sha256sum -- *.msi); (cd nsis && sha256sum -- *.exe); } | sed 's/ \*/  /' > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          gh release upload "${GITHUB_REF_NAME}" SHA256SUMS.txt --clobber

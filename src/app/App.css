@@ -1,0 +1,1461 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Surfaces */
+  --bg: #111214;
+  --surface: #17181b;
+  --surface-hover: #1d1f23;
+  --border: #2a2d33;
+  --border-strong: #3a3e45;
+
+  /* Accent (single) + danger */
+  --primary: #4d7fd0;
+  --primary-hover: #5c8cd8;
+  --primary-soft: #1b2733;
+  --danger: #d64545;
+  --danger-soft: #2a1c1e;
+  /* Status accents — reuse the muted preset tones (see PRESET_COLORS) so
+     banners/progress stay in the same narrow business palette. */
+  --warning: #a8894a;
+  --success: #3d8f83;
+
+  /* Text — AA-safe on both --bg and --surface, except --text-dim
+     which is reserved for incidental meta (units, paths, placeholders). */
+  --text: #e6e7ea;
+  --text-secondary: #9a9ea6;
+  --text-dim: #5c6068;
+
+  /* Type scale: 5 body steps (xs→lg) + one display size for stat numbers.
+     Hierarchy leans on size/color/letter-spacing, not weight. */
+  --fs-micro: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13px;
+  --fs-md: 15px;
+  --fs-lg: 20px;
+  --fs-display: 24px;
+
+  /* Spacing — 4px grid */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+
+  /* Single height for in-row controls (inputs, selects, icon buttons) */
+  --control-h: 32px;
+
+  --canvas-grid: rgba(255, 255, 255, 0.035);
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+/* ─── Focus ───────────────────────────
+   Accent ring on every keyboard-focusable control; text fields use an
+   accent border + square inset ring instead so the field edge reads as active. */
+button:focus-visible,
+.preset-card:focus-visible,
+.color-swatch:focus-visible,
+.icon-option:focus-visible,
+.monitor-chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+  outline: none;
+}
+
+::selection {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* ─── Custom Title Bar ─────────────────
+   Windows caption pattern: full-height buttons flush to the right edge, no gap. */
+.titlebar {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 0 var(--sp-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.titlebar-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.3px;
+}
+
+.titlebar-controls {
+  display: flex;
+  gap: 0;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-btn {
+  width: 46px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.titlebar-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.titlebar-btn:focus-visible {
+  outline-offset: -2px;
+}
+
+.titlebar-close:hover {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: var(--fs-md);
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.container {
+  padding: var(--sp-6);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ─── Header ─────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-6);
+}
+
+.header h1 {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+
+.header-subtitle {
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ─── Stats row (main view top) ──────── */
+.stats-row {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+.stat-card {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--sp-3) var(--sp-4);
+  text-align: center;
+}
+
+.stat-value {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-value.purple { color: var(--primary); }
+.stat-value.blue,
+.stat-value.teal { color: var(--text); }
+
+.stat-label {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: var(--sp-1);
+}
+
+/* ─── Section title ──────────────────── */
+.section-title,
+h2 {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ─── Preset list ────────────────────── */
+.preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: var(--sp-1);
+}
+
+.preset-list.compact {
+  max-height: 220px;
+}
+
+.preset-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--sp-3) var(--sp-4);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+
+.preset-card:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.preset-card.selected {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  box-shadow: inset 2px 0 0 var(--primary);
+}
+
+.preset-card.settings-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  border-left-width: 4px;
+}
+
+.preset-card.settings-card .preset-info {
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+
+/* ─── Preset card content ────────────── */
+.preset-card-content {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.preset-icon-wrap {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--fs-lg);
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.preset-icon-wrap img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+}
+
+.preset-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.preset-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+
+.preset-desc {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preset-badge {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 3px var(--sp-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Timer (startup countdown) ───────
+   One thin utility line; the count runs on tabular figures. */
+.timer {
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Buttons ────────────────────────── */
+.btn-row {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: center;
+}
+
+/* Stacked action rows (e.g. launch + switch) read as one cluster. */
+.btn-row + .btn-row {
+  margin-top: var(--sp-2);
+}
+
+/* Footer actions separated from the content block above. */
+.btn-row--footer {
+  margin-top: var(--sp-4);
+}
+
+/* Equal-width buttons filling the row. */
+.btn-row--split > .btn {
+  flex: 1;
+}
+
+.btn {
+  padding: var(--sp-3) var(--sp-5);
+  border: 1px solid transparent;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  letter-spacing: 0.2px;
+  font-family: inherit;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.btn-switch,
+.btn-switch-minimize,
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-switch:hover:not(:disabled),
+.btn-switch-minimize:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.btn-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--border);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: var(--danger);
+}
+
+.btn-small {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Icon buttons — one square control matching the row height. */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h);
+  height: var(--control-h);
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.btn-icon--danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-icon--toggle {
+  opacity: 0.55;
+  background: transparent;
+}
+
+.btn-icon--toggle:hover:not(:disabled) {
+  opacity: 0.85;
+  background: var(--surface-hover);
+}
+
+.btn-icon--toggle.active {
+  opacity: 1;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.reorder-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.btn-icon--reorder {
+  width: 24px;
+  height: 16px;
+}
+
+.btn-icon--reorder:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ─── Settings ───────────────────────── */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--sp-4);
+}
+
+.settings-section label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+}
+
+.settings-section input[type="number"],
+.settings-section select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  height: var(--control-h);
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-base);
+  font-family: inherit;
+  width: 150px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.settings-section select option {
+  background: var(--surface);
+}
+
+.autostart-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+}
+
+/* Hotkey picker: trigger button plus the reason a combo was rejected. */
+.hotkey-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.hotkey-input {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-1);
+}
+
+.hotkey-trigger {
+  min-width: 110px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hotkey-trigger.recording {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.hotkey-trigger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.hotkey-error {
+  font-size: var(--fs-sm);
+  color: var(--danger);
+  text-align: right;
+}
+
+/* Secondary buttons that carry a leading icon (e.g. the log opener). */
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+
+/* ─── Edit preset form ───────────────── */
+.form-group {
+  margin-bottom: var(--sp-3);
+}
+
+.form-group label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.form-group input[type="text"] {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-md);
+  font-family: inherit;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-group input[type="text"]::placeholder {
+  color: var(--text-dim);
+}
+
+/* ─── Color picker ───────────────────── */
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.color-swatch:hover {
+  border-color: var(--text-secondary);
+}
+
+.color-swatch.active {
+  border-color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--bg);
+}
+
+.color-input {
+  width: 24px;
+  height: 24px;
+  border: none;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-input::-webkit-color-swatch {
+  border: 1px dashed var(--text-dim);
+  border-radius: 0;
+}
+
+/* ─── Icon picker ────────────────────── */
+.icon-picker {
+  margin-bottom: var(--sp-5);
+}
+
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.icon-option {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-md);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.icon-option:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.icon-option.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--text);
+}
+
+.icon-search {
+  margin-bottom: var(--sp-2);
+}
+
+.icon-empty {
+  padding: var(--sp-4);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-2);
+}
+
+.icon-custom-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.icon-preview {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+}
+
+/* ─── Items list (apps + websites) ──── */
+.apps-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: var(--sp-1);
+}
+
+.apps-empty {
+  padding: var(--sp-4);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+}
+
+.app-entry {
+  display: flex;
+  gap: var(--sp-1);
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--sp-2);
+  transition: border-color 0.15s;
+}
+
+.app-entry:hover {
+  border-color: var(--border-strong);
+}
+
+.item-type-badge {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px var(--sp-1);
+  flex-shrink: 0;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+}
+
+.app-entry input[type="text"],
+.app-entry input[type="number"] {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  height: var(--control-h);
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.app-entry input::placeholder {
+  color: var(--text-dim);
+}
+
+.app-entry .btn-icon {
+  background: var(--bg);
+}
+
+/* Minimums sized so a full app row (path, 2 pickers, args, 2 toggles, delay,
+   reorder, remove) fits the container's max width without clipping */
+.app-path {
+  flex: 1;
+  min-width: 96px;
+}
+
+.app-args {
+  flex: 1;
+  min-width: 64px;
+}
+
+.app-delay {
+  width: 52px;
+  flex-shrink: 0;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.delay-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.delay-unit {
+  font-size: var(--fs-micro);
+  color: var(--text-dim);
+}
+
+/* Doubled class beats the generic .custom-select { width: 100% } declared later */
+.custom-select.app-browser {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.add-items-row {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.add-items-row .btn {
+  flex: 1;
+}
+
+/* ─── Autostart prompt ───────────────── */
+.autostart-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-5);
+  min-height: 350px;
+  text-align: center;
+}
+
+.autostart-prompt h2 {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: -0.2px;
+  margin-bottom: 0;
+}
+
+.autostart-prompt p {
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ─── Scrollbar ──────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* ─── Modal ──────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--sp-5);
+  width: 460px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-3);
+}
+
+.modal-header h2 {
+  margin-bottom: 0;
+}
+
+.search-input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-md);
+  font-family: inherit;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search-input::placeholder {
+  color: var(--text-dim);
+}
+
+/* ─── App Picker ─────────────────────── */
+.app-picker-list {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 360px;
+  margin-top: var(--sp-3);
+}
+
+.app-picker-item {
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.app-picker-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+.app-picker-icon--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  border: 1px solid var(--border);
+}
+
+.app-picker-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.app-picker-item:hover {
+  background: var(--surface-hover);
+}
+
+.app-picker-name {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.app-picker-path {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-picker-loading {
+  padding: var(--sp-5);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--fs-base);
+}
+
+.app-picker-empty {
+  padding: var(--sp-5);
+  text-align: center;
+}
+
+.app-picker-empty-title {
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+}
+
+.app-picker-empty-hint {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+/* ─── Monitor Editor ───────────────────
+   Reads as a technical-documentation schematic: a faint canvas grid,
+   utility labels on tabular figures, primary display flagged explicitly. */
+.monitor-editor {
+  margin-top: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.monitor-editor-label {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: var(--sp-2);
+}
+
+.monitor-editor-loading {
+  padding: var(--sp-3);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.monitor-app-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.monitor-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.monitor-chip:hover {
+  background: var(--surface-hover);
+}
+
+.monitor-chip.active,
+.monitor-chip.placed {
+  color: var(--text);
+}
+
+.monitor-chip-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.monitor-chip-clear {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.5;
+  margin-left: 2px;
+  cursor: pointer;
+}
+
+.monitor-chip-clear:hover {
+  opacity: 1;
+}
+
+.monitor-canvas {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(to right, var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--canvas-grid) 1px, transparent 1px);
+  background-size: 16px 16px;
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-2);
+  overflow: hidden;
+}
+
+.monitor-rect {
+  border: 1px solid var(--border-strong);
+  background: rgba(23, 24, 27, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.monitor-rect:hover {
+  background: var(--surface-hover);
+}
+
+.monitor-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  pointer-events: none;
+  line-height: 1.3;
+}
+
+.monitor-label-id {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.monitor-primary-badge {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 1px 4px;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.monitor-label-res {
+  font-size: var(--fs-micro);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-position-rect {
+  border: 2px solid var(--primary);
+  cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: opacity 0.15s;
+  z-index: 1;
+}
+
+.app-position-rect.selected {
+  z-index: 2;
+}
+
+.app-position-label {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 var(--sp-1);
+}
+
+.resize-handle {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 10px;
+  height: 10px;
+  cursor: se-resize;
+  z-index: 3;
+}
+
+.monitor-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-2);
+}
+
+/* ─── Custom Select ───────────────────
+   Design-system dropdown; menu is rendered in a body portal (fixed-positioned). */
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.settings-section .custom-select {
+  width: 150px;
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 var(--sp-2);
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.custom-select-trigger:hover {
+  border-color: var(--border-strong);
+}
+
+.custom-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-select-value.placeholder {
+  color: var(--text-dim);
+}
+
+.custom-select-chevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform 0.15s;
+}
+
+.custom-select-chevron.open {
+  transform: rotate(180deg);
+}
+
+.custom-select-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  z-index: 300;
+}
+
+.custom-select-option {
+  padding: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.custom-select-option.active {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.custom-select-option.selected {
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--primary);
+}
+
+/* ─── App banners (recovery notice, launch/import errors) ───
+   Same one-line utility pattern as .timer: flat surface, left accent. */
+.app-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: 0 var(--sp-6) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.app-banner code {
+  font-size: var(--fs-xs);
+  color: var(--text);
+}
+
+.app-banner--warning {
+  border-left: 2px solid var(--warning);
+}
+
+.app-banner--danger {
+  border-left: 2px solid var(--danger);
+  color: var(--text);
+  background: var(--danger-soft);
+}
+
+.app-banner--success {
+  border-left: 2px solid var(--success);
+}
+
+.container .app-banner {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.app-banner-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.app-banner-dismiss:hover {
+  color: var(--text);
+}
+
+/* ─── Launch progress (per-item status during preset launch) ─── */
+.launch-progress {
+  margin-bottom: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--primary);
+  padding: var(--sp-1) 0;
+}
+
+.launch-progress-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.launch-progress-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.launch-progress-item--ok .launch-progress-icon { color: var(--success); }
+.launch-progress-item--failed { color: var(--text); }
+.launch-progress-item--failed .launch-progress-icon { color: var(--danger); }
+.launch-progress-item--launching .launch-progress-icon { color: var(--primary); }
+.launch-progress-item--skipped .launch-progress-icon { color: var(--text-dim); }
+
+.launch-progress-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.launch-progress-note {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex-shrink: 10;
+}
+
+/* Failure detail inherits the row's bright --text (AA-safe on --surface); the
+   red X icon carries the status so the note stays fully legible. */
+.launch-progress-item--failed .launch-progress-note {
+  color: var(--text-secondary);
+}
+
+.progress-spin {
+  animation: progress-rotate 0.9s linear infinite;
+}
+
+@keyframes progress-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Delete confirmation (settings preset list) ─── */
+.confirm-delete {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+}
+
+/* Icon-only cancel reads as a square control next to the "Delete?" button. */
+.confirm-delete .btn-secondary.btn-small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-1);
+}
+
+/* ─── Untracked-item hint (item editor row) ─── */
+.item-untracked {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  cursor: help;
+  transition: color 0.15s;
+}
+
+.item-untracked:hover {
+  color: var(--warning);
+}
+
+/* ─── Config load failure ─── */
+.load-error {
+  margin: var(--sp-6);
+  padding: var(--sp-4);
+  background: var(--danger-soft);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--danger);
+}
+
+.load-error-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: var(--sp-2);
+}
+
+.load-error-title svg {
+  color: var(--danger);
+  flex-shrink: 0;
+}
+
+.load-error-detail {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+
+.launch-progress-header {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-1);
+}

@@ -1,0 +1,95 @@
+{
+  "defaultPreset": "work",
+  "timeoutSeconds": 30,
+  "autoStartAsked": false,
+  "closePreviousApps": false,
+  "hotkey": "Ctrl+Alt+W",
+  "hotkeyEnabled": true,
+  "presets": [
+    {
+      "id": "work",
+      "name": "Work",
+      "description": "IDE, browser, messenger",
+      "color": "#4d7fd0",
+      "icon": "monitor",
+      "apps": [
+        {
+          "type": "app",
+          "path": "C:\\Program Files\\Microsoft VS Code\\Code.exe",
+          "args": "",
+          "url": "",
+          "browser": "default",
+          "incognito": false,
+          "delayMs": 0,
+          "runAsAdmin": false,
+          "skipIfRunning": true,
+          "monitor": 0,
+          "monitorName": "\\\\.\\DISPLAY1",
+          "posX": 0,
+          "posY": 0,
+          "posWidth": 1280,
+          "posHeight": 1080
+        },
+        {
+          "type": "website",
+          "path": "",
+          "args": "",
+          "url": "https://mail.google.com",
+          "browser": "google-chrome",
+          "incognito": false,
+          "delayMs": 1000,
+          "runAsAdmin": false
+        },
+        {
+          "type": "website",
+          "path": "",
+          "args": "",
+          "url": "https://web.telegram.org",
+          "browser": "google-chrome",
+          "incognito": true,
+          "delayMs": 500,
+          "runAsAdmin": false
+        }
+      ]
+    },
+    {
+      "id": "gaming",
+      "name": "Gaming",
+      "description": "Steam, Discord",
+      "color": "#7862a8",
+      "icon": "gamepad-2",
+      "apps": [
+        {
+          "type": "app",
+          "path": "C:\\Program Files (x86)\\Steam\\steam.exe",
+          "args": "",
+          "url": "",
+          "browser": "default",
+          "incognito": false,
+          "delayMs": 0,
+          "runAsAdmin": false,
+          "skipIfRunning": true
+        },
+        {
+          "type": "app",
+          "path": "C:\\Users\\User\\AppData\\Local\\Discord\\Update.exe",
+          "args": "--processStart Discord.exe",
+          "url": "",
+          "browser": "default",
+          "incognito": false,
+          "delayMs": 2000,
+          "runAsAdmin": false,
+          "skipIfRunning": false
+        }
+      ]
+    },
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "description": "Clean boot, nothing extra",
+      "color": "#8b919c",
+      "icon": "zap",
+      "apps": []
+    }
+  ]
+}

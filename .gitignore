@@ -1,0 +1,9 @@
+node_modules
+.claude
+/src-tauri/target
+dist
+/src-tauri/gen/schemas
+
+# Internal working notes, not part of the public repo
+CLAUDE.md
+UPDATE.md

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Superseded PR pushes are pointless to finish; every main commit gets its run
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # npm ci runs third-party install scripts; keep the token out of .git/config
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: src-tauri
+
+      # The Rust toolchain comes from src-tauri/rust-toolchain.toml (rustup on the runner)
+      - run: npm ci
+      - run: npm run check:version
+      - name: Typecheck and build frontend
+        run: npm run build
+      - name: Frontend tests
+        run: npm test
+
+      # Integration tests (live registry, Start Menu, monitors, desktop windows)
+      # are #[ignore]d — run them locally with `cargo test -- --include-ignored`
+      - name: Clippy
+        working-directory: src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Rust unit tests
+        working-directory: src-tauri
+        run: cargo test --lib

@@ -1,0 +1,6 @@
+# LF in the repo and on checkout: the release workflow reads CHANGELOG.md on a
+# Windows runner and the Rust/TS tooling expects LF
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.bmp binary
